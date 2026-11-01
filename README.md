@@ -23,6 +23,24 @@ Engine latency is measured inside the C++ process, order in to
 trade out, with steady_clock. Yahoo fetch time is separate and
 is not counted, because Yahoo is minute-level and delayed.
 
+## Live mode vs replay mode
+Replay is the default mode for this repo: Yahoo minute bars are
+turned into synthetic orders and matched internally, and those
+numbers are the verified benchmarks below.
+
+Live mode is a second, clearly labelled mode, and it is a price
+watch only:
+- `live_adapter.py` connects to a public Binance or Coinbase
+  websocket (no API key, no trading endpoint) and prints prices,
+  optionally saving them to CSV.
+- It places no orders, sends no trades to the engine, and its
+  timing is never counted in the engine benchmark.
+- Example: `python3 live_adapter.py --source binance --symbol BTCUSDT --count 10`
+- To feed a live price into the engine, generate synthetic orders
+  around it yourself, exactly as `yahoo_adapter.py` does, and
+  label them synthetic. Do not present live websocket prices as
+  exchange orders or as tick data for the benchmark.
+
 ## Streamlit website
 `streamlit_app.py` is a browser version of the same price-time
 priority engine, in Python, so you can test it without compiling
@@ -98,6 +116,7 @@ these are conservative, not cherry-picked, numbers.
 ## Files
 - `src/engine.cpp` — the matching engine, single file, C++17.
 - `yahoo_adapter.py` — Yahoo fetch, synthetic order generation, quote poll.
+- `live_adapter.py` — Binance/Coinbase public websocket price watch only, no trading, not used for the benchmark.
 - `data/aapl_1m.csv` — Yahoo AAPL 1-minute bars used in the verified run.
 - `data/orders.csv` — synthetic orders generated from those bars.
 - `streamlit_app.py` — browser version of the engine, for the website.
